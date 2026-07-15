@@ -15,7 +15,7 @@ def check_georeferencing(
     require_geozarr: bool,
     crs_attrs: Sequence[str],
     require_bbox: bool,
-    require_cf_grid_mapping: bool = False,
+    require_cf_grid_mapping: bool,
 ) -> ValidationReport:
     """Check georeferencing requirements.
 

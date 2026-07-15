@@ -74,6 +74,7 @@ class TestCheckGeoreferencing:
             require_geozarr=False,
             crs_attrs=["crs_wkt", "spatial_ref"],
             require_bbox=False,
+            require_cf_grid_mapping=False,
         )
         assert any("PASS" in str(entry) for entry in report.results)
 
@@ -112,6 +113,7 @@ class TestCheckGeoreferencing:
             require_geozarr=False,
             crs_attrs=["crs_wkt"],
             require_bbox=False,
+            require_cf_grid_mapping=False,
         )
         assert all("CF grid mapping" not in str(entry) for entry in report.results)
 
