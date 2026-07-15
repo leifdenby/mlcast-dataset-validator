@@ -172,7 +172,8 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
 
     - The dataset MUST include proper georeferencing information following the GeoZarr specification.
     - The data variable MUST include a `grid_mapping` attribute that references the coordinate reference system (crs) variable.
-    - The crs variable MUST include both a `spatial_ref` and a `crs_wkt` attribute with a WKT string.
+    - The crs variable MUST include a `crs_wkt` attribute with a WKT string.
+    - The crs variable MUST include a `grid_mapping_name` attribute and all associated projection parameter attributes required by CF conventions (Appendix F). The authoritative source for these attributes is the output of `pyproj.CRS.from_wkt(crs_wkt).to_cf()`.
     """
     report += check_georeferencing(
         ds,
@@ -180,6 +181,7 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
         require_grid_mapping=True,
         crs_attrs=["spatial_ref", "crs_wkt"],
         require_bbox=True,
+        require_cf_grid_mapping=True,
     )
 
     spec_text += """
@@ -248,6 +250,27 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
     - `mlcast_dataset_identifier_format`: OPTIONAL format string that MUST start with `<country_code>-<entity>-<physical_variable>` and MAY include only the approved identifier parts: `country_code`, `entity`, `physical_variable`, `time_resolution`, `common_name`.
     """
     report += check_mlcast_metadata(ds)
+
+    spec_text += """
+    ### 5.5 Conventions Attribute
+
+    - The dataset SHOULD include a global `Conventions` attribute indicating the CF version (e.g., `"CF-1.12"`).
+    """
+    conventions = ds.attrs.get("Conventions", "")
+    if conventions:
+        report.add(
+            "5.5",
+            "Conventions attribute",
+            "PASS",
+            f"Global `Conventions` attribute is present: '{conventions}'.",
+        )
+    else:
+        report.add(
+            "5.5",
+            "Conventions attribute",
+            "WARNING",
+            "Global `Conventions` attribute is missing (recommended: 'CF-1.12').",
+        )
 
     spec_text += """
     ## 6. Tool Compatibility Requirements

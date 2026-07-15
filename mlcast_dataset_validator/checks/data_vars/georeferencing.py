@@ -16,8 +16,26 @@ def check_georeferencing(
     require_grid_mapping: bool,
     crs_attrs: Sequence[str],
     require_bbox: bool,
+    require_cf_grid_mapping: bool = False,
 ) -> ValidationReport:
-    """Check georeferencing requirements."""
+    """Check georeferencing requirements.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset to validate.
+    require_geozarr : bool
+        Whether to require GeoZarr-compliant georeferencing.
+    require_grid_mapping : bool
+        Whether to require a grid_mapping attribute on data variables.
+    crs_attrs : Sequence[str]
+        List of required attribute names on the CRS variable.
+    require_bbox : bool
+        Whether to require spatial bounding box coordinates.
+    require_cf_grid_mapping : bool
+        If True, additionally validate that the CRS variable has all CF-compliant
+        grid mapping attributes derived from the WKT string via pyproj.
+    """
     report = ValidationReport()
     # Find all grid_mapping data variables since we don't want to check those
     grid_mapping_vars = set()
@@ -55,6 +73,9 @@ def check_georeferencing(
                     "PASS",
                     f"CRS variable '{grid_mapping}' has all required attributes",
                 )
+
+            if require_cf_grid_mapping:
+                _check_cf_grid_mapping(report, grid_mapping, crs_var)
         else:
             report.add(
                 SECTION_ID,
@@ -64,3 +85,61 @@ def check_georeferencing(
             )
 
     return report
+
+
+def _check_cf_grid_mapping(
+    report: ValidationReport,
+    grid_mapping: str,
+    crs_var: xr.DataArray,
+) -> None:
+    """Validate CF-compliant grid mapping attributes on the CRS variable."""
+    wkt = crs_var.attrs.get("crs_wkt", "")
+    if not wkt:
+        report.add(
+            SECTION_ID,
+            "CF grid mapping validation",
+            "FAIL",
+            f"CRS variable '{grid_mapping}' has no 'crs_wkt' attribute to derive CF mapping from.",
+        )
+        return
+
+    try:
+        import pyproj
+
+        crs = pyproj.CRS.from_wkt(wkt)
+        cf_attrs = crs.to_cf()
+        missing_cf = {k for k in cf_attrs if k not in crs_var.attrs}
+        if missing_cf:
+            report.add(
+                SECTION_ID,
+                "CF grid mapping attributes",
+                "FAIL",
+                f"CRS variable '{grid_mapping}' is missing CF grid mapping attributes: "
+                f"{missing_cf}.\n"
+                "Fix by adding this to your dataset generation code:\n"
+                f"  >>> from pyproj import CRS\n"
+                f"  >>> crs = CRS.from_wkt(ds.crs.attrs['crs_wkt'])\n"
+                f"  >>> ds.crs.attrs.update(crs.to_cf())",
+            )
+        else:
+            report.add(
+                SECTION_ID,
+                "CF grid mapping attributes",
+                "PASS",
+                f"CRS variable '{grid_mapping}' has all required CF grid mapping attributes: "
+                f"{set(cf_attrs.keys())}.",
+            )
+    except ImportError:
+        report.add(
+            SECTION_ID,
+            "CF grid mapping attributes",
+            "WARNING",
+            "pyproj is not installed; skipping CF grid mapping validation.",
+        )
+    except Exception as e:
+        report.add(
+            SECTION_ID,
+            "CF grid mapping attributes",
+            "WARNING",
+            f"Could not validate CF grid mapping attributes: {e}",
+        )
