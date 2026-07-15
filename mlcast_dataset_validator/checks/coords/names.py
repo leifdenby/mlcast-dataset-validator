@@ -147,6 +147,33 @@ def _find_coordinates(ds: xr.Dataset, rules: RuleSet) -> List[str]:
     return matches
 
 
+def _name_only_matches(
+    coord_names: List[str], ds: xr.Dataset, cf_rules: RuleSet
+) -> List[str]:
+    """
+    Return coordinates that matched a rule set but only via name-based rules.
+
+    Parameters
+    ----------
+    coord_names : list of str
+        Previously matched coordinate names.
+    ds : xr.Dataset
+        Dataset containing the coordinates.
+    cf_rules : RuleSet
+        Rules with name-based entries removed.
+
+    Returns
+    -------
+    list of str
+        Subset of *coord_names* that do *not* match any CF metadata rule.
+    """
+    return [
+        name
+        for name in coord_names
+        if not any(_matches_rule(name, ds.coords[name], rule) for rule in cf_rules)
+    ]
+
+
 def _format_coord_list(names: Sequence[str]) -> str:
     """
     Render a list of coordinate names for human-readable reporting.
@@ -173,6 +200,7 @@ def check_coordinate_names(
     require_time_coord: bool = True,
     require_projected_coords: bool = False,
     require_latlon_coords: bool = False,
+    strict: bool = False,
 ) -> ValidationReport:
     """
     Validate that the dataset exposes CF-compliant coordinate variables.
@@ -191,9 +219,19 @@ def check_coordinate_names(
         Require projected x/y coordinates. Defaults to False.
     require_latlon_coords : bool, optional
         Require latitude/longitude coordinates. Defaults to False.
+    strict : bool, optional
+        When True, disable name-based fallback for projected x/y coordinates
+        so they must have explicit CF metadata (``standard_name`` or ``axis``).
+        Defaults to False.
     """
 
     report = ValidationReport()
+
+    x_rules = _COORD_RULES["x"]
+    y_rules = _COORD_RULES["y"]
+    if strict:
+        x_rules = [r for r in x_rules if "name" not in r]
+        y_rules = [r for r in y_rules if "name" not in r]
 
     time_coords = _find_coordinates(ds, _COORD_RULES["time"])
     if time_coords:
@@ -213,8 +251,8 @@ def check_coordinate_names(
 
     lat_coords = _find_coordinates(ds, _COORD_RULES["lat"])
     lon_coords = _find_coordinates(ds, _COORD_RULES["lon"])
-    x_coords = _find_coordinates(ds, _COORD_RULES["x"])
-    y_coords = _find_coordinates(ds, _COORD_RULES["y"])
+    x_coords = _find_coordinates(ds, x_rules)
+    y_coords = _find_coordinates(ds, y_rules)
 
     geographic_ok = bool(lat_coords and lon_coords)
     projected_ok = bool(x_coords and y_coords)
@@ -233,6 +271,21 @@ def check_coordinate_names(
             "PASS",
             f"CF-compliant projected x ({_format_coord_list(x_coords)}) and y ({_format_coord_list(y_coords)}) coordinates detected.",
         )
+        # Warn about name-only matches (no explicit CF metadata)
+        cf_proj_rules = [
+            {"standard_name": ("projection_x_coordinate",)},
+            {"axis": ("X",), "units": tuple(_LINEAR_DISTANCE_UNITS)},
+        ]
+        for coord_type, names in [("x", x_coords), ("y", y_coords)]:
+            for c in _name_only_matches(names, ds, cf_proj_rules):
+                report.add(
+                    SECTION_ID,
+                    "Projected coordinate metadata",
+                    "WARNING",
+                    f"Coordinate '{c}' matched by name only; "
+                    f"add `standard_name='projection_{coord_type}_coordinate'` "
+                    f"or `axis='{coord_type.upper()}'`.",
+                )
 
     failures: List[str] = []
     if require_latlon_coords and not geographic_ok:

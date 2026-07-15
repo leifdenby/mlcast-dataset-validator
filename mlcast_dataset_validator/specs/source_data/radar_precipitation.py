@@ -74,12 +74,14 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
 
     - The dataset MUST expose CF-compliant coordinates: latitude/longitude and projected x/y.
     - Coordinate metadata MUST provide `standard_name`/`axis`/`units` per CF (with a valid `time` coordinate as well).
+    - Projected x and y coordinates MUST include either `standard_name` (e.g., `projection_x_coordinate`, `projection_y_coordinate`) or `axis` (`X`, `Y`) with linear distance `units`, so that `cf_xarray` and other CF-aware tools can identify them as spatial axes.
     """
     report += check_coordinate_names(
         ds,
         require_time_coord=True,
         require_projected_coords=True,
         require_latlon_coords=True,
+        strict=True,
     )
 
     spec_text += """
