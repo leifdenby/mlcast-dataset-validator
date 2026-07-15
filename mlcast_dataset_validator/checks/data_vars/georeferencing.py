@@ -13,7 +13,6 @@ def check_georeferencing(
     ds: xr.Dataset,
     *,
     require_geozarr: bool,
-    require_grid_mapping: bool,
     crs_attrs: Sequence[str],
     require_bbox: bool,
     require_cf_grid_mapping: bool = False,
@@ -26,15 +25,14 @@ def check_georeferencing(
         Dataset to validate.
     require_geozarr : bool
         Whether to require GeoZarr-compliant georeferencing.
-    require_grid_mapping : bool
-        Whether to require a grid_mapping attribute on data variables.
     crs_attrs : Sequence[str]
         List of required attribute names on the CRS variable.
     require_bbox : bool
         Whether to require spatial bounding box coordinates.
     require_cf_grid_mapping : bool
-        If True, additionally validate that the CRS variable has all CF-compliant
-        grid mapping attributes derived from the WKT string via pyproj.
+        If True, require a ``grid_mapping`` attribute on data variables and
+        validate that the referenced CRS variable has all CF-compliant grid
+        mapping attributes derived from the WKT string via pyproj.
     """
     report = ValidationReport()
     # Find all grid_mapping data variables since we don't want to check those
@@ -46,7 +44,7 @@ def check_georeferencing(
 
     for data_var in data_vars:
         data_array = ds[data_var]
-        if require_grid_mapping and "grid_mapping" not in data_array.attrs:
+        if require_cf_grid_mapping and "grid_mapping" not in data_array.attrs:
             report.add(
                 SECTION_ID,
                 f"Grid mapping for {data_var}",

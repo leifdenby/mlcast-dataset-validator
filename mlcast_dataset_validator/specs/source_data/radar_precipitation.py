@@ -178,7 +178,6 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
     report += check_georeferencing(
         ds,
         require_geozarr=True,
-        require_grid_mapping=True,
         crs_attrs=["spatial_ref", "crs_wkt"],
         require_bbox=True,
         require_cf_grid_mapping=True,

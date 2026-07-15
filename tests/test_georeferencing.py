@@ -58,9 +58,9 @@ class TestCheckGeoreferencing:
         report = check_georeferencing(
             ds,
             require_geozarr=False,
-            require_grid_mapping=True,
             crs_attrs=["crs_wkt"],
             require_bbox=False,
+            require_cf_grid_mapping=True,
         )
         assert any(
             "grid_mapping" in str(entry) and "FAIL" in str(entry)
@@ -72,7 +72,6 @@ class TestCheckGeoreferencing:
         report = check_georeferencing(
             ds,
             require_geozarr=False,
-            require_grid_mapping=True,
             crs_attrs=["crs_wkt", "spatial_ref"],
             require_bbox=False,
         )
@@ -83,7 +82,6 @@ class TestCheckGeoreferencing:
         report = check_georeferencing(
             ds,
             require_geozarr=False,
-            require_grid_mapping=True,
             crs_attrs=["crs_wkt"],
             require_bbox=False,
             require_cf_grid_mapping=True,
@@ -98,7 +96,6 @@ class TestCheckGeoreferencing:
         report = check_georeferencing(
             ds,
             require_geozarr=False,
-            require_grid_mapping=True,
             crs_attrs=["crs_wkt"],
             require_bbox=False,
             require_cf_grid_mapping=True,
@@ -113,7 +110,6 @@ class TestCheckGeoreferencing:
         report = check_georeferencing(
             ds,
             require_geozarr=False,
-            require_grid_mapping=True,
             crs_attrs=["crs_wkt"],
             require_bbox=False,
         )
@@ -125,7 +121,6 @@ class TestCheckGeoreferencing:
         report = check_georeferencing(
             ds,
             require_geozarr=False,
-            require_grid_mapping=True,
             crs_attrs=[],
             require_bbox=False,
             require_cf_grid_mapping=True,
