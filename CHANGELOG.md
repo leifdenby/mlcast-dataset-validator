@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/mlcast-community/mlcast-dataset-validator)
 
+### Added
+
+- Check the CF attributes of the spatial coordinates: `standard_name`, `units` and `axis` on the projected x/y coordinates, `standard_name` and `units` on latitude/longitude (§3.1). Previously a coordinate was accepted by its bare name, so the spec text was not enforced [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
+- Check the CF grid mapping attributes of the crs variable (`grid_mapping_name` and the projection parameters, interpreted with pyproj without falling back to the WKT) and require both the CF attributes and `crs_wkt` to reproduce the stored latitude/longitude at sampled grid points (§4.5). Closes [\#26](https://github.com/mlcast-community/mlcast-dataset-validator/issues/26) [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
+- `pyproj` is now a core dependency [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
+
 ### Changed
 
+- Radar precipitation spec version bumped to 0.3.0 (new MUST requirements in §3.1 and §4.5) [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
 - Expand the scope of the radar precipitation spec to include single-radar products (previously restricted to multi-radar composites). Single-radar datasets are now in scope provided the valid sensing area supports at least one 256×256 crop at ≤1 km resolution (§3.2), @franchg
-
-### Changed
-
 - Include an explicit rel_tolerance as a parameter to check_spatial_requirements function and set it to 1% in radar_precipitation.py. This allows a small tolerance for datasets that are marginally above the strict 1.0km threshold, while maintaining the original resolution constraint intent. @jaimecasari
 
 ## [v0.3.0](https://github.com/mlcast-community/mlcast-dataset-validator/releases/tag/v0.3.0)

@@ -12,7 +12,7 @@ import textwrap
 import xarray as xr
 from loguru import logger
 
-from ...checks.coords.names import check_coordinate_names
+from ...checks.coords.names import check_coordinate_attributes, check_coordinate_names
 from ...checks.coords.spatial import check_spatial_requirements
 from ...checks.coords.temporal import check_temporal_requirements
 from ...checks.data_vars import naming
@@ -28,7 +28,7 @@ from ...checks.tool_compatibility.cartopy import check_cartopy_compatibility
 from ...checks.tool_compatibility.gdal import check_gdal_compatibility
 from ..reporting import ValidationReport
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 IDENTIFIER = __spec__.name.split(".")[-1]
 
 
@@ -74,14 +74,20 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
     spec_text += """
     ### 3.1 Coordinate Variables
 
-    - The dataset MUST expose CF-compliant coordinates: latitude/longitude and projected x/y.
-    - Coordinate metadata MUST provide `standard_name`/`axis`/`units` per CF (with a valid `time` coordinate as well).
+    - The dataset MUST expose CF-compliant coordinates: latitude/longitude and projected x/y, as well as a valid `time` coordinate.
+    - The projected coordinates MUST carry the CF attributes `standard_name` (`projection_x_coordinate` / `projection_y_coordinate`), `units` (a length unit, e.g. `m`) and `axis` (`X` / `Y`).
+    - The latitude/longitude coordinates MUST carry the CF attributes `standard_name` (`latitude` / `longitude`) and `units` (`degrees_north` / `degrees_east`).
     """
     report += check_coordinate_names(
         ds,
         require_time_coord=True,
         require_projected_coords=True,
         require_latlon_coords=True,
+    )
+    report += check_coordinate_attributes(
+        ds,
+        require_projected_attrs=True,
+        require_latlon_attrs=True,
     )
 
     spec_text += """
@@ -176,6 +182,8 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
     - The dataset MUST include proper georeferencing information following the GeoZarr specification.
     - The data variable MUST include a `grid_mapping` attribute that references the coordinate reference system (crs) variable.
     - The crs variable MUST include both a `spatial_ref` and a `crs_wkt` attribute with a WKT string.
+    - The crs variable MUST also carry the CF grid mapping attributes (CF conventions section 5.6 and appendix F): `grid_mapping_name` and the parameters of that projection, so that the CRS can be reconstructed without parsing the WKT.
+    - The CF grid mapping attributes and the `crs_wkt` string MUST both georeference the grid consistently with the latitude/longitude coordinates (within 1e-4 degrees at sampled grid points).
     """
     report += check_georeferencing(
         ds,
@@ -183,6 +191,8 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
         require_grid_mapping=True,
         crs_attrs=["spatial_ref", "crs_wkt"],
         require_bbox=True,
+        require_cf_grid_mapping=True,
+        latlon_tolerance_deg=1e-4,
     )
 
     spec_text += """

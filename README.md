@@ -30,6 +30,7 @@ The validator checks both **specification compliance** and **practical tool comp
 - **Technical Requirements:**
     - GeoZarr format (Zarr v2/v3 with proper georeferencing)
     - CF-compliant coordinate and variable names
+    - CF attributes on the spatial coordinates and CF grid mapping parameters on the crs variable (checked with pyproj against the stored latitude/longitude)
     - Correct dimension ordering (time × H × W)
     - Proper chunking strategy (1 chunk per timestep)
     - ZSTD compression (recommended)

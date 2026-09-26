@@ -147,6 +147,26 @@ def _find_coordinates(ds: xr.Dataset, rules: RuleSet) -> List[str]:
     return matches
 
 
+def find_cf_coordinates(ds: xr.Dataset) -> Dict[str, List[str]]:
+    """
+    Names of the coordinates matching each CF category (lat/lon/x/y/time).
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset whose coordinates should be inspected.
+
+    Returns
+    -------
+    dict[str, list[str]]
+        Mapping from category to the coordinate names that matched its rules.
+    """
+    return {
+        category: _find_coordinates(ds, rules)
+        for category, rules in _COORD_RULES.items()
+    }
+
+
 def _format_coord_list(names: Sequence[str]) -> str:
     """
     Render a list of coordinate names for human-readable reporting.
@@ -271,4 +291,132 @@ def check_coordinate_names(
             " ".join(failures),
         )
 
+    return report
+
+
+# Expected CF attribute values per coordinate category (checked by
+# check_coordinate_attributes once a coordinate has been identified).
+_EXPECTED_STANDARD_NAME = {
+    "x": "projection_x_coordinate",
+    "y": "projection_y_coordinate",
+    "lat": "latitude",
+    "lon": "longitude",
+}
+_ALLOWED_UNITS = {
+    "x": _LINEAR_DISTANCE_UNITS,
+    "y": _LINEAR_DISTANCE_UNITS,
+    "lat": _LAT_UNITS,
+    "lon": _LON_UNITS,
+}
+_UNITS_HINT = {
+    "x": "a length unit such as 'm'",
+    "y": "a length unit such as 'm'",
+    "lat": "'degrees_north'",
+    "lon": "'degrees_east'",
+}
+_EXPECTED_AXIS = {"x": "X", "y": "Y"}
+
+
+def _attribute_problems(coord_var: xr.DataArray, category: str) -> List[str]:
+    """
+    List the CF attribute problems of a coordinate for its category.
+
+    Parameters
+    ----------
+    coord_var : xr.DataArray
+        Coordinate data array with attached attributes.
+    category : str
+        One of ``x``, ``y``, ``lat``, ``lon``.
+
+    Returns
+    -------
+    list[str]
+        Human-readable problems; empty when the attributes are compliant.
+    """
+    problems: List[str] = []
+    expected_std = _EXPECTED_STANDARD_NAME[category]
+    std = coord_var.attrs.get("standard_name")
+    if std is None:
+        problems.append(f"missing 'standard_name' (expected '{expected_std}')")
+    elif _normalize(str(std)) != expected_std:
+        problems.append(f"'standard_name' is '{std}' (expected '{expected_std}')")
+
+    units = coord_var.attrs.get("units")
+    if units is None:
+        problems.append(f"missing 'units' (expected {_UNITS_HINT[category]})")
+    elif _normalize(str(units)) not in _ALLOWED_UNITS[category]:
+        problems.append(f"'units' is '{units}' (expected {_UNITS_HINT[category]})")
+
+    if category in _EXPECTED_AXIS:
+        expected_axis = _EXPECTED_AXIS[category]
+        axis = coord_var.attrs.get("axis")
+        if axis is None:
+            problems.append(f"missing 'axis' (expected '{expected_axis}')")
+        elif str(axis).strip().upper() != expected_axis:
+            problems.append(f"'axis' is '{axis}' (expected '{expected_axis}')")
+    return problems
+
+
+@log_function_call
+def check_coordinate_attributes(
+    ds: xr.Dataset,
+    *,
+    require_projected_attrs: bool = True,
+    require_latlon_attrs: bool = True,
+) -> ValidationReport:
+    """
+    Validate the CF attributes of the spatial coordinates.
+
+    Coordinates are identified with the same rules as
+    :func:`check_coordinate_names` (which also accepts a bare name such as
+    ``x``); this check then requires the CF metadata to actually be present:
+
+    - projected ``x``/``y``: ``standard_name`` (``projection_x_coordinate`` /
+      ``projection_y_coordinate``), a length ``units`` and ``axis`` (``X``/``Y``)
+    - ``lat``/``lon``: ``standard_name`` (``latitude``/``longitude``) and
+      degree ``units``
+
+    A category with no matching coordinate at all is not reported here; its
+    absence is reported by :func:`check_coordinate_names`.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset to evaluate.
+    require_projected_attrs : bool, optional
+        Check the projected x/y coordinates. Defaults to True.
+    require_latlon_attrs : bool, optional
+        Check the latitude/longitude coordinates. Defaults to True.
+    """
+    report = ValidationReport()
+    found = find_cf_coordinates(ds)
+
+    categories: List[str] = []
+    if require_projected_attrs:
+        categories += ["x", "y"]
+    if require_latlon_attrs:
+        categories += ["lat", "lon"]
+
+    for category in categories:
+        for name in found[category]:
+            problems = _attribute_problems(ds.coords[name], category)
+            checked = (
+                "standard_name/units/axis"
+                if category in _EXPECTED_AXIS
+                else "standard_name/units"
+            )
+            if problems:
+                report.add(
+                    SECTION_ID,
+                    f"CF attributes of coordinate '{name}'",
+                    "FAIL",
+                    "; ".join(problems),
+                )
+            else:
+                report.add(
+                    SECTION_ID,
+                    f"CF attributes of coordinate '{name}'",
+                    "PASS",
+                    f"'{name}' has CF-compliant {checked}",
+                )
     return report
