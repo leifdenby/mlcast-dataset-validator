@@ -257,6 +257,7 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
     - `mlcast_created_by`: Creator contact in `Name <email>` format.
     - `mlcast_created_with`: GitHub URL of the creating software including version (e.g., https://github.com/mlcast-community/mlcast-dataset-radklim@v0.1.0) and the repository/revision MUST exist.
     - `mlcast_dataset_version`: Dataset specification version (semver or calver).
+    - `mlcast_dataset_validator_version`: Version of `mlcast-dataset-validator` that the dataset conforms to (e.g., `0.4.0`). It SHOULD match the version of the validator being run.
     - `mlcast_dataset_identifier`: Unique dataset identifier formatted as `<country_code>-<entity>-<physical_variable>` by default.
     - `mlcast_dataset_identifier_format`: OPTIONAL format string that MUST start with `<country_code>-<entity>-<physical_variable>` and MAY include only the approved identifier parts: `country_code`, `entity`, `physical_variable`, `time_resolution`, `common_name`.
     """

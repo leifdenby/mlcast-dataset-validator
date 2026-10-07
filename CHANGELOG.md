@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Check the CF attributes of the spatial coordinates: `standard_name`, `units` and `axis` on the projected x/y coordinates, `standard_name` and `units` on latitude/longitude (§3.1). Previously a coordinate was accepted by its bare name, so the spec text was not enforced [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
 - Check the CF grid mapping attributes of the crs variable (`grid_mapping_name` and the projection parameters, interpreted with pyproj without falling back to the WKT) and require both the CF attributes and `crs_wkt` to reproduce the stored latitude/longitude at sampled grid points (§4.5). Closes [\#26](https://github.com/mlcast-community/mlcast-dataset-validator/issues/26) [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
 - `pyproj` is now a core dependency [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
+- Require the global attribute `mlcast_dataset_validator_version`, giving the `mlcast-dataset-validator` version that the dataset conforms to (§5.4). A missing or invalid version fails, and a version other than the one running the validation gives a warning. This lets the `mlcast-datasets` catalog check that each dataset matches the validator version its catalog entry is pinned to, @leifdenby
 
 ### Changed
 
