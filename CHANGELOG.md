@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Maintenance
 
-- Add CI check that fails pull requests which don't update `CHANGELOG.md`; PRs that don't need an entry can opt out with the `no changelog` label, @leifdenby
+- Add CI check that fails pull requests which don't update `CHANGELOG.md`; PRs that don't need an entry can opt out with the `no changelog` label [\#42](https://github.com/mlcast-community/mlcast-dataset-validator/pull/42), @leifdenby
 
 ## [v0.3.0](https://github.com/mlcast-community/mlcast-dataset-validator/releases/tag/v0.3.0)
 
