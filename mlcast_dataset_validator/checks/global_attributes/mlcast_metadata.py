@@ -12,6 +12,7 @@ from packaging.version import parse as parse_version
 from parse import compile as parse_compile
 from requests import RequestException
 
+from ... import __version__
 from ...specs.reporting import ValidationReport
 from ...utils.logging_decorator import log_function_call
 from . import SECTION_ID as PARENT_SECTION_ID
@@ -22,6 +23,7 @@ GITHUB_WITH_VERSION_FORMAT = "https://github.com/{org}/{repo}@{version}"
 DEFAULT_DATASET_IDENTIFIER_FORMAT = "{country_code}-{entity}-{physical_variable}"
 DATASET_IDENTIFIER_ATTRIBUTE = "mlcast_dataset_identifier"
 DATASET_IDENTIFIER_FORMAT_ATTRIBUTE = "mlcast_dataset_identifier_format"
+VALIDATOR_VERSION_ATTRIBUTE = "mlcast_dataset_validator_version"
 EXPECTED_GITHUB_ORG = "mlcast-community"
 EXPECTED_REPO_PATTERN = "mlcast-dataset-{organisation_id}-{dataset_name}"
 
@@ -401,6 +403,9 @@ def check_mlcast_metadata(ds: xr.Dataset) -> ValidationReport:
         GitHub URL of the creating software including version.
     mlcast_dataset_version
         Dataset specification version (semver or calver).
+    mlcast_dataset_validator_version
+        Version of mlcast-dataset-validator that the dataset conforms to. A
+        version other than the one running the validation gives a warning.
     mlcast_dataset_identifier
         Dataset identifier matching the dataset identifier format rules.
 
@@ -586,6 +591,47 @@ def check_mlcast_metadata(ds: xr.Dataset) -> ValidationReport:
                 "FAIL",
                 f"Version '{dataset_version}' is not valid semver or calver: {exc}",
             )
+
+    validator_version = attrs.get(VALIDATOR_VERSION_ATTRIBUTE)
+    running_version = parse_version(parse_version(__version__).base_version)
+    if validator_version is None:
+        report.add(
+            SECTION_ID,
+            f"Global attribute '{VALIDATOR_VERSION_ATTRIBUTE}'",
+            "FAIL",
+            "Missing required mlcast-dataset-validator version that the dataset "
+            f"conforms to (e.g. '{running_version}')",
+        )
+    else:
+        try:
+            parsed_validator_version = parse_version(str(validator_version).strip())
+        except InvalidVersion as exc:
+            report.add(
+                SECTION_ID,
+                f"Global attribute '{VALIDATOR_VERSION_ATTRIBUTE}'",
+                "FAIL",
+                f"Version '{validator_version}' is not a valid version: {exc}",
+            )
+        else:
+            if parsed_validator_version == running_version:
+                report.add(
+                    SECTION_ID,
+                    f"Global attribute '{VALIDATOR_VERSION_ATTRIBUTE}'",
+                    "PASS",
+                    f"Dataset conforms to mlcast-dataset-validator {running_version}, "
+                    "the version running this validation",
+                )
+            else:
+                report.add(
+                    SECTION_ID,
+                    f"Global attribute '{VALIDATOR_VERSION_ATTRIBUTE}'",
+                    "WARNING",
+                    f"Dataset says it conforms to mlcast-dataset-validator "
+                    f"{parsed_validator_version}, but is being validated with "
+                    f"{running_version}. Validate with "
+                    f"mlcast-dataset-validator=={parsed_validator_version} to check "
+                    "the version it claims",
+                )
 
     dataset_identifier_format = attrs.get(DATASET_IDENTIFIER_FORMAT_ATTRIBUTE)
     format_ok = True
