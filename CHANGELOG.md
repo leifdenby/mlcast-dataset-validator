@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/mlcast-community/mlcast-dataset-validator)
+## [v0.4.0](https://github.com/mlcast-community/mlcast-dataset-validator/releases/tag/v0.4.0)
+
+This release tightens the radar precipitation spec (now version 0.3.0) with new MUST requirements on CF attributes of spatial coordinates and the grid mapping, full-domain spatial chunking, and a required `mlcast_dataset_validator_version` global attribute. Existing datasets may need updating to pass. The spec scope is also expanded to include single-radar products.
 
 ### Added
 
@@ -17,8 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Radar precipitation spec version bumped to 0.3.0 (new MUST requirements in §3.1 and §4.5) [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
-- Expand the scope of the radar precipitation spec to include single-radar products (previously restricted to multi-radar composites). Single-radar datasets are now in scope provided the valid sensing area supports at least one 256×256 crop at ≤1 km resolution (§3.2), @franchg
-- Include an explicit rel_tolerance as a parameter to check_spatial_requirements function and set it to 1% in radar_precipitation.py. This allows a small tolerance for datasets that are marginally above the strict 1.0km threshold, while maintaining the original resolution constraint intent. @jaimecasari
+- Expand the scope of the radar precipitation spec to include single-radar products (previously restricted to multi-radar composites). Single-radar datasets are now in scope provided the valid sensing area supports at least one 256×256 crop at ≤1 km resolution (§3.2) [\#36](https://github.com/mlcast-community/mlcast-dataset-validator/pull/36), @franchg
+- Include an explicit rel_tolerance as a parameter to check_spatial_requirements function and set it to 1% in radar_precipitation.py. This allows a small tolerance for datasets that are marginally above the strict 1.0km threshold, while maintaining the original resolution constraint intent [\#38](https://github.com/mlcast-community/mlcast-dataset-validator/pull/38), @jaimecasari
 
 ### Fixed
 
