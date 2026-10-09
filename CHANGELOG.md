@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Radar precipitation spec version bumped to 0.3.0 (new MUST requirements in §3.1 and §4.5) [\#41](https://github.com/mlcast-community/mlcast-dataset-validator/pull/41), @franchg
 - Expand the scope of the radar precipitation spec to include single-radar products (previously restricted to multi-radar composites). Single-radar datasets are now in scope provided the valid sensing area supports at least one 256×256 crop at ≤1 km resolution (§3.2), @franchg
 - Include an explicit rel_tolerance as a parameter to check_spatial_requirements function and set it to 1% in radar_precipitation.py. This allows a small tolerance for datasets that are marginally above the strict 1.0km threshold, while maintaining the original resolution constraint intent. @jaimecasari
+- `mlcast_created_by` now accepts several creators as a comma-separated list of `Name <email>` entries (§5.4). Previously a value listing more than one creator failed validation. Closes [\#34](https://github.com/mlcast-community/mlcast-dataset-validator/issues/34), @leifdenby
 
 ### Fixed
 
