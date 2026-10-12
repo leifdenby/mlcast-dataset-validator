@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from scripts import make_verification_scores_example as example
 
 from mlcast_dataset_validator.checks.global_attributes import mlcast_metadata
 from mlcast_dataset_validator.checks.global_attributes.zarr_format import (
@@ -12,46 +13,10 @@ from mlcast_dataset_validator.specs.reporting import ValidationReport, skip_all_
 from mlcast_dataset_validator.specs.verification import metrics
 
 
-def make_metrics_dataset(n_init_times=40, init_freq="1D"):
+def make_metrics_dataset(**kwargs):
     """Valid verification metrics dataset, modelled on the smallest input that
     mlwp-scorecard renders (see its README)."""
-    forecast_source = ["baseline", "model"]
-    lead_time = pd.timedelta_range("15min", periods=8, freq="15min")
-    init_time = pd.date_range("2024-01-01", periods=n_init_times, freq=init_freq)
-    rng = np.random.default_rng(0)
-    shape = (len(forecast_source), len(lead_time), len(init_time))
-    dims = ("forecast_source", "lead_time", "init_time")
-
-    ds = xr.Dataset(
-        {
-            "rmse.tp": (dims, rng.random(shape), {"units": "mm", "long_name": "RMSE"}),
-            "csi.tp": (dims, rng.random(shape), {"units": "1", "long_name": "CSI"}),
-            "fss.tp": (
-                dims,
-                rng.random(shape),
-                {
-                    "units": "1",
-                    "long_name": "FSS",
-                    "metric_polarity": "higher_is_better",
-                },
-            ),
-        },
-        coords=dict(
-            forecast_source=forecast_source, lead_time=lead_time, init_time=init_time
-        ),
-        attrs={
-            "title": "Precipitation nowcast scores",
-            "forecasts": "a baseline and a model",
-            "truth": "radar composite",
-            "license": "CC-BY-4.0",
-            "mlcast_created_on": "2026-10-12T00:00:00",
-            "mlcast_created_by": "Jane Doe <jane@example.com>",
-            "mlcast_created_with": "https://github.com/mlcast-community/mlcast-dataset-dmi-nowcast-scores@v0.1.0",
-            "mlcast_dataset_version": "0.1.0",
-            "mlcast_dataset_validator_version": "0.4.0",
-        },
-    )
-    return ds
+    return example.make_verification_scores_example(validator_version="0.4.0", **kwargs)
 
 
 def _validate(ds):
@@ -94,6 +59,13 @@ def test_valid_dataset_passes(tmp_path, suffix):
         "5.3",
         "5.4",
     }
+
+
+def test_example_script_writes_valid_dataset(tmp_path, monkeypatch):
+    path = tmp_path / "scores.nc"
+    example.main([str(path)])
+    monkeypatch.setattr("sys.argv", ["prog", "verification", "metrics", str(path)])
+    assert cli.main() == 0
 
 
 def test_cli_validates_netcdf(tmp_path, monkeypatch):

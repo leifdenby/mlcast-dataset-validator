@@ -51,6 +51,13 @@ For [verification metrics datasets it checks](mlcast_dataset_validator/specs/ver
 - `units` on every data variable
 - Zarr or netCDF storage, license and MLCast metadata (without a dataset identifier)
 
+To try it out, [`tests/scripts/make_verification_scores_example.py`](tests/scripts/make_verification_scores_example.py) writes a small conforming example dataset (also a starting point for writing your own scores):
+
+```bash
+uv run tests/scripts/make_verification_scores_example.py scores.nc
+uvx --from mlcast-dataset-validator mlcast.validate_dataset verification metrics scores.nc
+```
+
 ## How is the tool implemented?
 
 1. **Spec modules are organized by data stage/product**
