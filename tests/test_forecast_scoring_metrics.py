@@ -241,6 +241,37 @@ def test_dataset_identifier_not_required():
     assert not [r for r in report.results if "identifier" in r.requirement]
 
 
+def test_creator_provenance_not_required():
+    ds = make_metrics_dataset()
+    assert "mlcast_created_by" not in ds.attrs
+    assert "mlcast_created_with" not in ds.attrs
+    assert _statuses(_validate(ds), "5.4") == {"PASS"}
+
+
+def test_created_with_any_github_repo_passes():
+    ds = make_metrics_dataset()
+    ds.attrs[
+        "mlcast_created_with"
+    ] = "https://github.com/leifdenby/mlcast-verification-tools@v0.1.0"
+    assert _statuses(_validate(ds), "5.4") == {"PASS"}
+
+
+@pytest.mark.parametrize(
+    "attr, value",
+    [
+        ("mlcast_created_by", "Jane Doe"),
+        (
+            "mlcast_created_with",
+            "https://github.com/leifdenby/mlcast-verification-tools",
+        ),
+    ],
+)
+def test_invalid_creator_provenance_fails_when_present(attr, value):
+    ds = make_metrics_dataset()
+    ds.attrs[attr] = value
+    assert "FAIL" in _statuses(_validate(ds), "5.4")
+
+
 def test_usable_by_mlwp_scorecard():
     scorecard = pytest.importorskip("mlwp_scorecard")
     scorecard.ScoreCard(

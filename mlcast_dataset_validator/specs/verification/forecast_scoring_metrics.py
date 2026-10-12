@@ -301,11 +301,20 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
     The dataset MUST include the following global attributes:
 
     - `mlcast_created_on`: ISO formatted datetime of dataset creation.
-    - `mlcast_created_by`: Creator contact in `Name <email>` format.
-    - `mlcast_created_with`: GitHub URL of the creating software including version (e.g., https://github.com/mlcast-community/mlcast-dataset-dmi-nowcast-scores@v0.1.0) and the repository/revision MUST exist.
     - `mlcast_dataset_version`: Dataset specification version (semver or calver).
     - `mlcast_dataset_validator_version`: Version of `mlcast-dataset-validator` that the dataset conforms to (e.g., `0.4.0`). It SHOULD match the version of the validator being run.
+
+    Forecast scoring metrics datasets are usually written by a verification tool rather than built by a dedicated dataset repository, so creator and software provenance are optional. The dataset MAY include the following global attributes, which MUST be valid when present:
+
+    - `mlcast_created_by`: Creator contact in `Name <email>` format.
+    - `mlcast_created_with`: GitHub URL of the software that created the dataset, including version (e.g., https://github.com/leifdenby/mlcast-verification-tools@v0.1.0). Any GitHub repository is accepted, and the repository/revision MUST exist.
     """
-    report += check_mlcast_metadata(ds, require_identifier=False).in_section("5.4")
+    report += check_mlcast_metadata(
+        ds,
+        require_identifier=False,
+        require_created_by=False,
+        require_created_with=False,
+        require_dataset_repo_naming=False,
+    ).in_section("5.4")
 
     return report, textwrap.dedent(spec_text)

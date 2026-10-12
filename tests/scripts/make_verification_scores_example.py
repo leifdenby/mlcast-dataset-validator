@@ -98,8 +98,6 @@ def make_verification_scores_example(
             "truth": "radar composite",
             "license": "CC-BY-4.0",
             "mlcast_created_on": "2026-10-12T00:00:00",
-            "mlcast_created_by": "Jane Doe <jane@example.com>",
-            "mlcast_created_with": "https://github.com/mlcast-community/mlcast-dataset-dmi-nowcast-scores@v0.1.0",
             "mlcast_dataset_version": "0.1.0",
             "mlcast_dataset_validator_version": validator_version
             or _validator_version(),
