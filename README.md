@@ -43,6 +43,14 @@ The validator checks both **specification compliance** and **practical tool comp
     - cartopy can create CRS objects and transform coordinates
     - Cross-tool CRS consistency checks
 
+For [verification metrics datasets it checks](mlcast_dataset_validator/specs/verification/metrics.py) that the scores are stored per forecast case, so they can be used directly as input to [mlwp-scorecard](https://github.com/mlwp-tools/mlwp-scorecard):
+
+- `forecast_source` (string), `init_time` (datetime64) and `lead_time` (timedelta64) dimensions, with no `metric` or `variable` dimension
+- Data variables named `{metric}.{variable}` (the WeatherBench-X convention), of floating point type with NaN for cases that were not verified
+- A known polarity (higher or lower is better) for every metric, or one declared in a `metric_polarity` attribute
+- `units` on every data variable
+- Zarr or netCDF storage, license and MLCast metadata (without a dataset identifier)
+
 ## How is the tool implemented?
 
 1. **Spec modules are organized by data stage/product**
@@ -64,6 +72,8 @@ mlcast_dataset_validator/
 │   │   └── radar_precipitation.py
 │   ├── training_data/
 │   │   └── ... (no specs yet)
+│   ├── verification/
+│   │   └── metrics.py
 │   └── cli.py
 └── checks/
     ├── coords/

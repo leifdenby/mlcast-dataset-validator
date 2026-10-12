@@ -379,7 +379,9 @@ def parse_dataset_identifier(value: str, format_str: str) -> Dict[str, str]:
 
 
 @log_function_call
-def check_mlcast_metadata(ds: xr.Dataset) -> ValidationReport:
+def check_mlcast_metadata(
+    ds: xr.Dataset, *, require_identifier: bool = True
+) -> ValidationReport:
     """
     Validate required MLCast-specific global attributes.
 
@@ -387,6 +389,10 @@ def check_mlcast_metadata(ds: xr.Dataset) -> ValidationReport:
     ----------
     ds : xarray.Dataset
         Dataset to validate.
+    require_identifier : bool, optional
+        Whether to require and validate the `mlcast_dataset_identifier` (and
+        optional `mlcast_dataset_identifier_format`) attributes. Defaults to
+        True.
 
     Returns
     -------
@@ -407,7 +413,8 @@ def check_mlcast_metadata(ds: xr.Dataset) -> ValidationReport:
         Version of mlcast-dataset-validator that the dataset conforms to. A
         version other than the one running the validation gives a warning.
     mlcast_dataset_identifier
-        Dataset identifier matching the dataset identifier format rules.
+        Dataset identifier matching the dataset identifier format rules (only
+        when `require_identifier` is True).
 
     Optional global attributes
     --------------------------
@@ -632,6 +639,9 @@ def check_mlcast_metadata(ds: xr.Dataset) -> ValidationReport:
                     f"mlcast-dataset-validator=={parsed_validator_version} to check "
                     "the version it claims",
                 )
+
+    if not require_identifier:
+        return report
 
     dataset_identifier_format = attrs.get(DATASET_IDENTIFIER_FORMAT_ATTRIBUTE)
     format_ok = True

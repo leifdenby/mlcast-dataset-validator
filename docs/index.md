@@ -8,3 +8,5 @@ Available specifications:
 
 - Source data
     - [Radar precipitation](specs/source_data/radar_precipitation.md)
+- Verification
+    - [Metrics](specs/verification/metrics.md)
