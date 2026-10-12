@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New `verification/metrics` specification (version 0.1.0) for datasets of per-forecast-case verification scores. It uses the WeatherBench-X `{metric}.{variable}` naming, has `forecast_source`, `init_time` and `lead_time` dimensions, and requires a declared `metric_polarity` for metrics whose polarity is not known. A conforming dataset can be used directly as input to [mlwp-scorecard](https://github.com/mlwp-tools/mlwp-scorecard). The spec is validated with new generic checks in `checks/coords/dimensions.py`, `checks/coords/temporal.py`, `checks/data_vars/{naming,metric_polarity,data_structure,data_variable}.py` and `checks/global_attributes/recommended.py`, @leifdenby
-- The CLI now opens netCDF files (`.nc`, `.nc4`, `.cdf`), and `check_zarr_format` takes `allow_netcdf` to accept them. `netcdf4` is now a core dependency, @leifdenby
-- `check_mlcast_metadata` takes `require_identifier` so that a spec can leave out the dataset identifier attributes, @leifdenby
-- `ValidationReport.in_section()` relabels the results of a reused check to the section numbering of the spec using it, @leifdenby
+- New `verification/metrics` specification (version 0.1.0) for datasets of per-forecast-case verification scores. It uses the WeatherBench-X `{metric}.{variable}` naming, has `forecast_source`, `init_time` and `lead_time` dimensions, and requires a declared `metric_polarity` for metrics whose polarity is not known. A conforming dataset can be used directly as input to [mlwp-scorecard](https://github.com/mlwp-tools/mlwp-scorecard). The spec is validated with new generic checks in `checks/coords/dimensions.py`, `checks/coords/temporal.py`, `checks/data_vars/{naming,metric_polarity,data_structure,data_variable}.py` and `checks/global_attributes/recommended.py` [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
+- The CLI now opens netCDF files (`.nc`, `.nc4`, `.cdf`), and `check_zarr_format` takes `allow_netcdf` to accept them. `netcdf4` is now a core dependency [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
+- `check_mlcast_metadata` takes `require_identifier` so that a spec can leave out the dataset identifier attributes [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
+- `ValidationReport.in_section()` relabels the results of a reused check to the section numbering of the spec using it [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
+
+### Maintenance
+
+- Update repository URLs after the rename from `mlcast-sourcedata-validator` to `mlcast-dataset-validator` [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
 
 ## [v0.4.0](https://github.com/mlcast-community/mlcast-dataset-validator/releases/tag/v0.4.0)
 
