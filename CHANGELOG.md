@@ -14,10 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `check_mlcast_metadata` takes `require_identifier` so that a spec can leave out the dataset identifier attributes [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
 - `ValidationReport.in_section()` relabels the results of a reused check to the section numbering of the spec using it [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
 
-### Maintenance
-
-- Update repository URLs after the rename from `mlcast-sourcedata-validator` to `mlcast-dataset-validator` [\#47](https://github.com/mlcast-community/mlcast-dataset-validator/pull/47), @leifdenby
-
 ## [v0.4.0](https://github.com/mlcast-community/mlcast-dataset-validator/releases/tag/v0.4.0)
 
 This release tightens the radar precipitation spec (now version 0.3.0) with new MUST requirements on CF attributes of spatial coordinates and the grid mapping, full-domain spatial chunking, and a required `mlcast_dataset_validator_version` global attribute. Existing datasets may need updating to pass. The spec scope is also expanded to include single-radar products.

@@ -122,8 +122,8 @@ uvx --from mlcast-dataset-validator mlcast.validate_dataset source_data radar_pr
 Or you can of course clone the repository and run it directly:
 
 ```bash
-git clone https://github.com/mlcast-community/mlcast-dataset-validator
-cd mlcast-dataset-validator
+git clone
+cd mlcast-sourcedata-validator
 pip install -e .
 mlcast.validate_dataset source_data radar_precipitation /path/to/zarr/file.zarr
 ```
