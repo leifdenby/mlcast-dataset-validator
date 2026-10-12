@@ -10,17 +10,17 @@ from mlcast_dataset_validator.checks.global_attributes.zarr_format import (
 )
 from mlcast_dataset_validator.specs import cli
 from mlcast_dataset_validator.specs.reporting import ValidationReport, skip_all_checks
-from mlcast_dataset_validator.specs.verification import metrics
+from mlcast_dataset_validator.specs.verification import scoring_metrics
 
 
 def make_metrics_dataset(**kwargs):
-    """Valid verification metrics dataset, modelled on the smallest input that
-    mlwp-scorecard renders (see its README)."""
+    """Valid verification scoring metrics dataset, modelled on the smallest
+    input that mlwp-scorecard renders (see its README)."""
     return example.make_verification_scores_example(validator_version="0.4.0", **kwargs)
 
 
 def _validate(ds):
-    report, _ = metrics.validate_dataset(ds)
+    report, _ = scoring_metrics.validate_dataset(ds)
     return report
 
 
@@ -64,20 +64,24 @@ def test_valid_dataset_passes(tmp_path, suffix):
 def test_example_script_writes_valid_dataset(tmp_path, monkeypatch):
     path = tmp_path / "scores.nc"
     example.main([str(path)])
-    monkeypatch.setattr("sys.argv", ["prog", "verification", "metrics", str(path)])
+    monkeypatch.setattr(
+        "sys.argv", ["prog", "verification", "scoring_metrics", str(path)]
+    )
     assert cli.main() == 0
 
 
 def test_cli_validates_netcdf(tmp_path, monkeypatch):
     path = tmp_path / "scores.nc"
     make_metrics_dataset().to_netcdf(path)
-    monkeypatch.setattr("sys.argv", ["prog", "verification", "metrics", str(path)])
+    monkeypatch.setattr(
+        "sys.argv", ["prog", "verification", "scoring_metrics", str(path)]
+    )
     assert cli.main() == 0
 
 
 def test_spec_text_renders_without_dataset():
     with skip_all_checks():
-        report, spec_text = metrics.validate_dataset(None)
+        report, spec_text = scoring_metrics.validate_dataset(None)
     assert report.results == []
     for heading in ["### 3.1", "### 3.3", "### 4.2", "### 4.4", "### 5.4"]:
         assert heading in spec_text
