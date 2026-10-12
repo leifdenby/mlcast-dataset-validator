@@ -43,7 +43,7 @@ The validator checks both **specification compliance** and **practical tool comp
     - cartopy can create CRS objects and transform coordinates
     - Cross-tool CRS consistency checks
 
-For [verification scoring metrics datasets it checks](mlcast_dataset_validator/specs/verification/scoring_metrics.py) that the scores are stored per forecast case, so they can be used directly as input to [mlwp-scorecard](https://github.com/mlwp-tools/mlwp-scorecard):
+For [forecast scoring metrics datasets it checks](mlcast_dataset_validator/specs/verification/forecast_scoring_metrics.py) that the scores are stored per forecast case, so they can be used directly as input to [mlwp-scorecard](https://github.com/mlwp-tools/mlwp-scorecard):
 
 - `forecast_source` (string), `init_time` (datetime64) and `lead_time` (timedelta64) dimensions, with no `metric` or `variable` dimension
 - Data variables named `{metric}.{variable}` (the WeatherBench-X convention), of floating point type with NaN for cases that were not verified
@@ -55,7 +55,7 @@ To try it out, [`tests/scripts/make_verification_scores_example.py`](tests/scrip
 
 ```bash
 uv run tests/scripts/make_verification_scores_example.py scores.nc
-uvx --from mlcast-dataset-validator mlcast.validate_dataset verification scoring_metrics scores.nc
+uvx --from mlcast-dataset-validator mlcast.validate_dataset verification forecast_scoring_metrics scores.nc
 ```
 
 ## How is the tool implemented?
@@ -80,7 +80,7 @@ mlcast_dataset_validator/
 │   ├── training_data/
 │   │   └── ... (no specs yet)
 │   ├── verification/
-│   │   └── scoring_metrics.py
+│   │   └── forecast_scoring_metrics.py
 │   └── cli.py
 └── checks/
     ├── coords/

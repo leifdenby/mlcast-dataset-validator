@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This module defines the MLCast specification for verification scoring metric datasets
-and provides a validation function to check datasets against this
+This module defines the MLCast specification for forecast scoring metrics
+datasets and provides a validation function to check datasets against this
 specification. The specification text is written inline with the calls to
 checking operations that match the specification requirements.
 
@@ -47,7 +47,7 @@ RESERVED_DIMS = ("metric", "variable")
 # Core public API
 # -------------------------
 def validate_dataset(ds: xr.Dataset) -> ValidationReport:
-    """Validate a verification scoring metrics dataset against the MLCast specification."""
+    """Validate a forecast scoring metrics dataset against the MLCast specification."""
     report = ValidationReport()
     known_metrics = ", ".join(f"`{m}`" for m in KNOWN_METRIC_POLARITY)
     polarities = ", ".join(f"`{p}`" for p in POLARITIES)
@@ -60,14 +60,15 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
 
     ## 1. Introduction
 
-    This document specifies the requirements for datasets of forecast
-    verification scoring metrics (scores) to be included in the MLCast data
+    This document specifies the requirements for forecast scoring metrics
+    datasets, i.e. datasets of metrics applied to score forecasts against a
+    truth (such as RMSE, CSI or FSS), to be included in the MLCast data
     collection.
     The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
     "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
     interpreted as described in RFC 2119.
 
-    A scoring metrics dataset holds one data variable per (metric, physical
+    A forecast scoring metrics dataset holds one data variable per (metric, physical
     variable) pair. Each element is the score of one forecast, from one forecast
     source, at one lead time (and optionally against one truth source, over one
     spatial region, at one level or threshold), i.e. after the reduction over
@@ -79,7 +80,7 @@ def validate_dataset(ds: xr.Dataset) -> ValidationReport:
 
     ## 2. Scope
 
-    This specification applies to scoring metrics computed for any
+    This specification applies to forecast scoring metrics computed for any
     forecast product (e.g. precipitation nowcasts, numerical or machine-learned
     weather forecasts) against any truth source (e.g. radar observations,
     analyses). It does not constrain how the metrics are computed.

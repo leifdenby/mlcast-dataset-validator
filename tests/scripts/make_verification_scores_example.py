@@ -4,11 +4,11 @@
 # ///
 """
 Write a small example dataset conforming to the MLCast
-`verification/scoring_metrics` specification, e.g. to try out the validator or
+`verification/forecast_scoring_metrics` specification, e.g. to try out the validator or
 as a template for writing your own verification scores:
 
     uv run tests/scripts/make_verification_scores_example.py scores.nc
-    uvx --from mlcast-dataset-validator mlcast.validate_dataset verification scoring_metrics scores.nc
+    uvx --from mlcast-dataset-validator mlcast.validate_dataset verification forecast_scoring_metrics scores.nc
 
 The scores are random numbers, only the layout and metadata are meaningful.
 """
@@ -42,7 +42,7 @@ def make_verification_scores_example(
     validator_version: str | None = None,
 ) -> xr.Dataset:
     """
-    Create an example verification scoring metrics dataset.
+    Create an example forecast scoring metrics dataset.
 
     The dataset has scores for two forecast sources ("baseline" and "model")
     at 8 lead times (15 min to 2 h), for `n_init_times` forecast cases (§3),
@@ -130,7 +130,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         ds.to_netcdf(args.output)
 
     print(f"Wrote {args.output}, validate it with:")
-    print(f"  mlcast.validate_dataset verification scoring_metrics {args.output}")
+    print(
+        f"  mlcast.validate_dataset verification forecast_scoring_metrics {args.output}"
+    )
 
 
 if __name__ == "__main__":
